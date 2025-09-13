@@ -1,0 +1,11 @@
+# 默认忽略一切
+*
+# 显式允许 .gitignore 文件（新增这行）
+!.gitignore
+# 但包含 tools/ 及其所有子内容
+!/tools/
+!/tools/**
+# 可选：忽略常见临时文件
+*.log
+.DS_Store
+__pycache__/
