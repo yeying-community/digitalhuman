@@ -9,3 +9,8 @@
 *.log
 .DS_Store
 __pycache__/
+# 忽略 Python 虚拟环境
+.venv/
+# 可选：忽略其他常见 Python 环境目录（防止后续误提交）
+venv/
+env/
