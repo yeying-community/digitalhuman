@@ -1,17 +1,33 @@
-# 默认忽略一切
+# —— 基础规则：默认忽略一切 ——
 *
-# 显式允许 .gitignore 文件（新增这行）
+
+# 允许 .gitignore 自身
 !.gitignore
-# 但包含 tools/ 及其所有子内容
-!/tools/
-!/tools/**
-# 可选：忽略常见临时文件
+
+# —— 放行 data/minio/yeying-interviewer/data/ 目录及其所有文件 ——
+!/data/
+!/data/minio/
+!/data/minio/yeying-interviewer/
+!/data/minio/yeying-interviewer/data/
+!/data/minio/yeying-interviewer/data/**
+
+# —— 放行 mock-json-openai 中“仅 server.py”——
+!/mock-json-openai/
+!/mock-json-openai/server.py
+# 不放行 server_old.py（默认仍被上面的“*”忽略）
+# 也不放行 __pycache__（默认忽略）
+
+# —— 放行 scripts 中“仅 sync_minio_interviewer.sh”——
+!/scripts/
+!/scripts/sync_minio_interviewer.sh
+
+# —— 明确确保 tools 被忽略（历史上被跟踪过也会在下面移除）——
+tools/
+
+# —— 常见临时/环境文件 —— 
 *.log
 .DS_Store
 __pycache__/
-# 忽略 Python 虚拟环境
 .venv/
-# 可选：忽略其他常见 Python 环境目录（防止后续误提交）
 venv/
 env/
-tools/openai-gateway/main_old.py
