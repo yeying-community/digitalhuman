@@ -1,10 +1,10 @@
 核心代码在/mock-json-openai目录下，主要是提取miniIO上的json，不论接到什么，都按顺序返回json的回答，但由于json格式没有文档中的关键字，所以提取quesion或后面分类字典字段中的问题去重后放到answer字段方便数字人朗读
-#使用方法：
+# 使用方法：
 ```bash
 uvicorn server:app --reload --host 0.0.0.0 --port 8001
 ```
 
-#测试：
+# 测试：
 ```bash
 curl -s http://127.0.0.1:8001/healthz
 curl -s -X POST http://127.0.0.1:8001/v1/chat/completions \
@@ -36,7 +36,7 @@ curl -s -X POST http://127.0.0.1:8001/v1/chat/completions \
 ```
 特别是其中的URL端口8001要根据crul通的来填
 
-#调用：
+# 调用：
 ```bash
 ~/work/3rdparty/Open-LLM-VTuber$ uv run run_server.py
 ```
