@@ -1,33 +1,22 @@
-# —— 基础规则：默认忽略一切 ——
-*
+# 1) 默认忽略仓库根下的一切
+/*
 
-# 允许 .gitignore 自身
+# 2) 总是跟踪本文件
 !.gitignore
 
-# —— 放行 data/minio/yeying-interviewer/data/ 目录及其所有文件 ——
-!/data/
-!/data/minio/
-!/data/minio/yeying-interviewer/
-!/data/minio/yeying-interviewer/data/
-!/data/minio/yeying-interviewer/data/**
+# 3) 只放行 digitalhuman_round_server/ 整个子树
+!/digitalhuman_round_server/
+!/digitalhuman_round_server/**
 
-# —— 放行 mock-json-openai 中“仅 server.py”——
-!/mock-json-openai/
-!/mock-json-openai/server.py
-# 不放行 server_old.py（默认仍被上面的“*”忽略）
-# 也不放行 __pycache__（默认忽略）
+# 4) 在放行目录内需要屏蔽的文件（按你的实际路径）
+/digitalhuman_round_server/app/dh_gateway_old.py
 
-# —— 放行 scripts 中“仅 sync_minio_interviewer.sh”——
-!/scripts/
-!/scripts/sync_minio_interviewer.sh
-
-# —— 明确确保 tools 被忽略（历史上被跟踪过也会在下面移除）——
-tools/
-
-# —— 常见临时/环境文件 —— 
-*.log
-.DS_Store
-__pycache__/
-.venv/
-venv/
-env/
+# 5) 放行目录内的常见临时/环境文件全部忽略
+/digitalhuman_round_server/**/__pycache__/
+/digitalhuman_round_server/**/*.pyc
+/digitalhuman_round_server/*.log
+/digitalhuman_round_server/.DS_Store
+/digitalhuman_round_server/.venv/
+/digitalhuman_round_server/venv/
+/digitalhuman_round_server/env/
+/digitalhuman_round_server/.env
