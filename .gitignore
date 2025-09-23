@@ -7,7 +7,8 @@
 # 3) 只放行 digitalhuman_round_server/ 整个子树
 !/digitalhuman_round_server/
 !/digitalhuman_round_server/**
-
+!/digitalhub_service/
+!/digitalhub_service/**
 # 4) 在放行目录内需要屏蔽的文件（按你的实际路径）
 /digitalhuman_round_server/app/dh_gateway_old.py
 
@@ -20,3 +21,11 @@
 /digitalhuman_round_server/venv/
 /digitalhuman_round_server/env/
 /digitalhuman_round_server/.env
+/digitalhub_service/**/__pycache__/
+/digitalhub_service/**/*.pyc
+/digitalhub_service/*.log
+/digitalhub_service/.DS_Store
+/digitalhub_service/.venv/
+/digitalhub_service/venv/
+/digitalhub_service/env/
+/digitalhub_service/.env
