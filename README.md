@@ -67,7 +67,7 @@ snw@DESKTOP-SHDD92E:~/work/digitalhub_service$ ./curl_test.sh
 ```
 最好浏览器打开数字人网页进行一次问话看是否正常
 # 3.面试官侧调用
-首先按照**1.部署与启动**打开数字人编排器，然后先补一下面试官的后端环境变量再启动：
+首先按照**1.部署与启动**打开数字人编排器，然后先补一下面试官的后端环境变量再启动（记得其中miniIO每次重启机器要export一次）：
 ```bash
 export DIGITALHUB_BASE="http://127.0.0.1:9009"
 
@@ -109,7 +109,13 @@ Database initialized successfully
  * Debugger PIN: 442-183-967
 ```
 可以访问面试官网站实测效果，点击创建面试间（或已有会话），会等待数字人有返回后才成功，然后立即有数字人网址。点击生成面试题，等待生成完成，展示第一个面试题，就可以复制刚刚返回的数字人网址进行沉浸式面试。随便说比如“你好”，数字人会开始问问题（理想情况会跟面试官中的第一题一样，否则应该会报错，要去log看错哪了）
-# 旧的单LLM启动验证：
+# 4.排错
+```bash
+tail -n 200 -f ~/work/digitalhub_service/logs/vtuber.log
+tail -n 200 -f ~/work/digitalhub_service/logs/llm.log
+```
+# 5.旧模块开发测试
+### 5.1.1旧的单LLM启动验证：
 ```bash
 # 进入工程目录（你现在就在这儿就忽略）
 cd ~/work/digitalhuman_round_server
@@ -132,7 +138,7 @@ export MINIO_SECURE="true"  # https=true; 如果走 http, 设为 false
 export PORT="8011"
 ./run.sh
 ```
-# 验证：
+### 5.1.2验证：
 ```bash
 curl -N http://127.0.0.1:8011/v1/chat/completions \
   -H "Content-Type: application/json" \
