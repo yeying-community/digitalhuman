@@ -1,14 +1,14 @@
 from __future__ import annotations
-import os, re, time, socket, threading, subprocess
+import os, re, time, socket, threading, subprocess, io, itertools
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
-# —— 路径（按你的机器） ——
 VTUBER_ROOT = os.getenv("VTUBER_ROOT", os.path.expanduser("~/work/3rdparty/Open-LLM-VTuber"))
 LLM_SERVER_ROOT = os.getenv("LLM_SERVER_ROOT", os.path.expanduser("~/work/digitalhuman_round_server"))
 PUBLIC_HOST = os.getenv("PUBLIC_HOST", "localhost")
+LOG_DIR = os.getenv("DH_LOG_DIR", os.path.expanduser("~/work/digitalhub_service/logs"))
 
 UVICORN_READY_RE = re.compile(r"Uvicorn running on (https?://[^\s]+)")
 VTUBER_PORT_LINE_RE = re.compile(r"Starting server on (?:localhost|127\.0\.0\.1):(\d+)")
@@ -54,6 +54,7 @@ class ProcManager:
     @staticmethod
     def _port_open(host: str, port: int, timeout: float = 0.25) -> bool:
         try:
+            import socket
             with socket.create_connection((host, port), timeout=timeout):
                 return True
         except Exception:
@@ -68,11 +69,18 @@ class ProcManager:
         m = re.match(r"https?://([^/:]+)(?::(\d+))?", url)
         if not m:
             raise ValueError(f"bad url: {url}")
-        host = m.group(1)
-        port = int(m.group(2) or 80)
+        host = m.group(1); port = int(m.group(2) or 80)
         return host, port
 
-    # —— VTuber —— 
+    def _drain_to_file(self, popen: subprocess.Popen, filepath: str):
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        def _run():
+            with open(filepath, "a", buffering=1, encoding="utf-8", errors="ignore") as f:
+                for line in iter(popen.stdout.readline, ""):
+                    f.write(line)
+        threading.Thread(target=_run, daemon=True).start()
+
+    # ---- VTuber ----
     def ping_vtuber(self) -> Dict[str, Any]:
         with self.lock:
             if self.vtuber and self.vtuber.url:
@@ -92,31 +100,25 @@ class ProcManager:
             popen = subprocess.Popen(
                 ["uv", "run", "run_server.py"],
                 cwd=VTUBER_ROOT,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1,
             )
             proc = ProcInfo(name="vtuber", popen=popen)
             self.vtuber = proc
+            self._drain_to_file(popen, f"{LOG_DIR}/vtuber.log")
 
-        ready_url = None
-        detected_port: Optional[int] = None
+        ready_url, detected_port = None, None
         start = time.time()
         while time.time() - start < timeout_sec:
             line = proc.popen.stdout.readline()
             if not line:
                 if proc.popen.poll() is not None:
                     break
-                time.sleep(0.05)
-                continue
+                time.sleep(0.05); continue
             m1 = UVICORN_READY_RE.search(line)
-            if m1:
-                ready_url = m1.group(1)
-                break
+            if m1: ready_url = m1.group(1); break
             m2 = VTUBER_PORT_LINE_RE.search(line)
-            if m2:
-                detected_port = int(m2.group(1))
+            if m2: detected_port = int(m2.group(1))
         if not ready_url and detected_port and self._port_open("127.0.0.1", detected_port):
             ready_url = f"http://localhost:{detected_port}"
         if not ready_url:
@@ -126,11 +128,10 @@ class ProcManager:
                 self.vtuber = None
             raise RuntimeError("VTuber server boot timeout or failed to detect ready URL")
         url = self._replace_host(ready_url, public_host or PUBLIC_HOST)
-        with self.lock:
-            proc.url = url
+        with self.lock: proc.url = url
         return url
 
-    # —— LLM Round Server —— 
+    # ---- LLM Round Server ----
     def start_llm(self, req: LLMStartRequest) -> Dict[str, Any]:
         env = os.environ.copy()
         env.update({
@@ -151,14 +152,13 @@ class ProcManager:
             popen = subprocess.Popen(
                 ["bash", "./run.sh"],
                 cwd=LLM_SERVER_ROOT,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                env=env,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1, env=env,
             )
             proc = ProcInfo(name="llm", popen=popen, extra={"port": req.port})
             self.llm = proc
+            self._drain_to_file(popen, f"{LOG_DIR}/llm.log")
+
         start = time.time()
         while time.time() - start < 25:
             if self._port_open("127.0.0.1", req.port):
@@ -168,7 +168,7 @@ class ProcManager:
 
     def status(self) -> Dict[str, Any]:
         with self.lock:
-            data: Dict[str, Any] = {"vtuber": None, "llm": None}
+            data = {"vtuber": None, "llm": None}
             if self.vtuber:
                 data["vtuber"] = {"pid": self.vtuber.popen.pid, "url": self.vtuber.url, "alive": (self.vtuber.popen.poll() is None)}
             if self.llm:
@@ -184,13 +184,12 @@ class ProcManager:
                         proc.popen.terminate()
                         try: proc.popen.wait(timeout=3)
                         except Exception: proc.popen.kill()
-                    except Exception:
-                        pass
+                    except Exception: pass
                     setattr(self, attr, None)
         return {"stopped": True}
 
 manager = ProcManager()
-app = FastAPI(title="digitalhub", version="0.2.0")
+app = FastAPI(title="digitalhub", version="0.3.0")
 
 @app.get("/api/v1/dh/ping", response_model=SimpleResponse)
 def ping_dh():
@@ -217,3 +216,26 @@ def status():
 def stop_all():
     return {"code": 200, "data": manager.stop_all()}
 
+# ---- 新增：日志接口 ----
+def _tail_file(path: str, lines: int) -> str:
+    try:
+        with open(path, "rb") as f:
+            # 简单 tail 实现
+            f.seek(0, 2); size = f.tell()
+            block = 1024; data = b""
+            while size > 0 and lines >= 0:
+                step = min(block, size)
+                size -= step; f.seek(size)
+                chunk = f.read(step)
+                data = chunk + data
+                lines -= chunk.count(b"\n")
+                if lines <= 0: break
+            return data.decode("utf-8", errors="ignore")
+    except FileNotFoundError:
+        return "(no log yet)"
+
+@app.get("/api/v1/dh/logs/{proc_name}", response_model=SimpleResponse)
+def read_logs(proc_name: str, lines: int = Query(200, ge=1, le=5000)):
+    log_file = f"{LOG_DIR}/{proc_name}.log"
+    content = _tail_file(log_file, lines)
+    return {"code": 200, "data": {"file": log_file, "lines": lines, "content": content}}
