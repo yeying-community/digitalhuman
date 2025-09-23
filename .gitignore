@@ -29,3 +29,10 @@
 /digitalhub_service/venv/
 /digitalhub_service/env/
 /digitalhub_service/.env
+# 本地备份命名约定（避免被提交）
+/digitalhuman_round_server/**/*_old*
+/digitalhub_service/**/*_old*
+/digitalhuman_round_server/**/*.bak
+/digitalhub_service/**/*.bak
+/digitalhuman_round_server/**/*~
+/digitalhub_service/**/*~
