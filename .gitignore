@@ -1,0 +1,38 @@
+# 1) 默认忽略仓库根下的一切
+/*
+
+# 2) 总是跟踪本文件
+!.gitignore
+
+# 3) 只放行 digitalhuman_round_server/ 整个子树
+!/digitalhuman_round_server/
+!/digitalhuman_round_server/**
+!/digitalhub_service/
+!/digitalhub_service/**
+# 4) 在放行目录内需要屏蔽的文件（按你的实际路径）
+/digitalhuman_round_server/app/dh_gateway_old.py
+
+# 5) 放行目录内的常见临时/环境文件全部忽略
+/digitalhuman_round_server/**/__pycache__/
+/digitalhuman_round_server/**/*.pyc
+/digitalhuman_round_server/*.log
+/digitalhuman_round_server/.DS_Store
+/digitalhuman_round_server/.venv/
+/digitalhuman_round_server/venv/
+/digitalhuman_round_server/env/
+/digitalhuman_round_server/.env
+/digitalhub_service/**/__pycache__/
+/digitalhub_service/**/*.pyc
+/digitalhub_service/*.log
+/digitalhub_service/.DS_Store
+/digitalhub_service/.venv/
+/digitalhub_service/venv/
+/digitalhub_service/env/
+/digitalhub_service/.env
+# 本地备份命名约定（避免被提交）
+/digitalhuman_round_server/**/*_old*
+/digitalhub_service/**/*_old*
+/digitalhuman_round_server/**/*.bak
+/digitalhub_service/**/*.bak
+/digitalhuman_round_server/**/*~
+/digitalhub_service/**/*~
