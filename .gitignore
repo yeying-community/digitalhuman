@@ -36,3 +36,12 @@
 /digitalhub_service/**/*.bak
 /digitalhuman_round_server/**/*~
 /digitalhub_service/**/*~
+# === 允许提交根目录交付文件 ===
+!/docker-compose.yml
+!/.env.example
+!/README_DEPLOY.md
+
+# === 允许 3rdparty 占位目录及 prod 配置进入版本库 ===
+!/3rdparty/
+
+!/conf.prod.yaml

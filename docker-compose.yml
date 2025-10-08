@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  orchestrator:
+    build: { context: ./digitalhub_service, dockerfile: Dockerfile }
+    container_name: digitalhub
+    env_file: [.env]
+    ports: ["9009:9009"]      # 对外
+    depends_on: [llm, vtuber]
+    healthcheck:
+      test: ["CMD-SHELL","curl -fsS http://127.0.0.1:9009/api/v1/dh/ping || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks: [dhnet]
+
+  llm:
+    build: { context: ./digitalhuman_round_server, dockerfile: Dockerfile }
+    container_name: round_server
+    expose: ["8011"]          # 仅容器网络内可见
+    env_file: [.env]
+    networks: [dhnet]
+
+  vtuber:
+    # 注意：上游仓库到服务器时会被运维拉到 ./3rdparty/Open-LLM-VTuber
+    build:
+      context: ./3rdparty/Open-LLM-VTuber
+      dockerfile: Dockerfile   # 如上游用小写 dockerfile，请改成 dockerfile
+    container_name: open_llm_vtuber
+    ports: ["12393:12393"]     # 对外
+    volumes:
+      - ./conf.prod.yaml:/app/conf.yaml
+    networks: [dhnet]
+
+networks: { dhnet: {} }
