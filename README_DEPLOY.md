@@ -3,7 +3,7 @@ git clone https://github.com/yeying-community/digitalhuman.git
 cd digitalhuman
 cp .env.example .env   # 填好 PUBLIC_HOST / MINIO_*
 # 拉上游数字人到占位目录
-git clone https://github.com/Open-LLM-VTuber/Open-LLM-VTuber.git 3rdparty/Open-LLM-VTuber
+git clone https://github.com/Open-LLM-VTuber/Open-LLM-VTuber.git 3rdparty/
 
 docker compose up -d --build
 
