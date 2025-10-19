@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-BASE="http://127.0.0.1:9009"
+#BASE="http://127.0.0.1:9009"
+BASE="https://digitalhub.yeying.pub"
 
 
 echo "[PING]" && curl -s "$BASE/api/v1/dh/ping" | jq
-SID="f0866a61-46bd-411a-a0f8-af98befd34da"
+SID="1efd5f59-42a1-40b9-9342-9d150665b2c1"
 RID="dc29ef90-c6d9-4293-a479-c8f24d77aed2"
 echo "[BOOT VTUBER]" && curl -s -X POST "$BASE/api/v1/dh/boot" -H "Content-Type: application/json" -d "{\"room_id\":\"$RID\",\"session_id\":\"$SID\",\"timeout_sec\":90}" | jq
 export MINIO_ENDPOINT="test-minio.yeying.pub"

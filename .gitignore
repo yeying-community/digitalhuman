@@ -45,3 +45,12 @@
 !/3rdparty/
 
 !/conf.prod.yaml
+**/*_old_*
+**/*_old.*
+# ---- block nested vendor repo inside 3rdparty ----
+/3rdparty/Open-LLM-VTuber/
+
+# ---- ignore logs & nohup under digitalhub_service ----
+/digitalhub_service/logs/**
+/digitalhub_service/**/*.log
+/digitalhub_service/nohup.out

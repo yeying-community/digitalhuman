@@ -10,10 +10,13 @@ BASE_DIR = Path(__file__).resolve().parent
 VTUBER_ROOT = os.getenv("VTUBER_ROOT", str((BASE_DIR / "../3rdparty/Open-LLM-VTuber").resolve()))
 LLM_SERVER_ROOT = os.getenv("LLM_SERVER_ROOT", str((BASE_DIR / "../digitalhuman_round_server").resolve()))
 PUBLIC_HOST = os.getenv("PUBLIC_HOST", "localhost")  # 这行保持不变
+PUBLIC_VTUBER_HOST = os.getenv("PUBLIC_VTUBER_HOST", "vtuber.yeying.com")
+PUBLIC_LLM_HOST = os.getenv("PUBLIC_LLM_HOST", "llm-round.yeying.com")
 LOG_DIR = os.getenv("DH_LOG_DIR", str((BASE_DIR / "logs").resolve()))
 
 UVICORN_READY_RE = re.compile(r"Uvicorn running on (https?://[^\s]+)")
-VTUBER_PORT_LINE_RE = re.compile(r"Starting server on (?:localhost|127\.0\.0\.1):(\d+)")
+#VTUBER_PORT_LINE_RE = re.compile(r"Starting server on (?:localhost|127\.0\.0\.1):(\d+)")
+VTUBER_PORT_LINE_RE = re.compile(r"Starting server on (?:localhost|0\.0\.0\.0):(\d+)")
 
 class BootRequest(BaseModel):
     room_id: Optional[str] = None
@@ -129,7 +132,7 @@ class ProcManager:
                 except Exception: pass
                 self.vtuber = None
             raise RuntimeError("VTuber server boot timeout or failed to detect ready URL")
-        url = self._replace_host(ready_url, public_host or PUBLIC_HOST)
+        url = self._replace_host(ready_url, public_host or PUBLIC_VTUBER_HOST)
         with self.lock: proc.url = url
         return url
 
@@ -164,9 +167,9 @@ class ProcManager:
         start = time.time()
         while time.time() - start < 25:
             if self._port_open("127.0.0.1", req.port):
-                return {"running": True, "base_url": f"http://127.0.0.1:{req.port}/v1"}
+                return {"running": True, "base_url": f"http://{PUBLIC_LLM_HOST}:{req.port}/v1"}
             time.sleep(0.25)
-        return {"running": False, "base_url": f"http://127.0.0.1:{req.port}/v1", "message": "port not open within 25s"}
+        return {"running": False, "base_url": f"http://{PUBLIC_LLM_HOST}:{req.port}/v1", "message": "port not open within 25s"}
 
     def status(self) -> Dict[str, Any]:
         with self.lock:
