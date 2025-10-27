@@ -5,10 +5,10 @@ from .minio_adapter import MinioAdapter
 from .loader import extract_questions
 from .state import RoundState
 from . import dh_gateway
-
-QUESTIONS_OBJECT_TPL = "data/questions_round_{round}_{session}.json"
-QA_COMPLETE_OBJECT_TPL = "analysis/qa_complete_{round}_{session}.json"
-
+#QUESTIONS_OBJECT_TPL = "data/questions_round_{round}_{session}.json"
+QUESTIONS_OBJECT_TPL = "rooms/{room_id}/sessions/{session}/questions/round_{round}.json"
+#QA_COMPLETE_OBJECT_TPL = "analysis/qa_complete_{round}_{session}.json"
+QA_COMPLETE_OBJECT_TPL = "rooms/{room_id}/sessions/{session}/analysis/qa_complete_{round}.json"
 app = FastAPI(title="digitalhuman-round-server", version="0.1.0")
 
 @app.on_event("startup")
@@ -24,7 +24,7 @@ def on_startup():
 
     # 2) Load questions JSON from MinIO (strict; no local fallback)
     questions_object = QUESTIONS_OBJECT_TPL.format(
-        round=settings.ROUND_INDEX, session=settings.SESSION_ID
+        round=settings.ROUND_INDEX, room_id=settings.ROOM_ID, session=settings.SESSION_ID
     )
     payload: Dict[str, Any] = minio.get_json(questions_object)
 
@@ -55,7 +55,7 @@ def on_startup():
     dh_gateway.APP_STATE = st
     dh_gateway.MINIO = minio
     dh_gateway.UPLOAD_OBJECT_NAME = QA_COMPLETE_OBJECT_TPL.format(
-        round=settings.ROUND_INDEX, session=settings.SESSION_ID
+        round=settings.ROUND_INDEX,room_id=settings.ROOM_ID, session=settings.SESSION_ID
     )
 
     # 7) Mount routes
@@ -64,3 +64,38 @@ def on_startup():
 @app.get("/")
 def root():
     return {"service": "digitalhuman-round-server", "status": "ready"}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
