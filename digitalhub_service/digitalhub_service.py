@@ -133,7 +133,10 @@ class ProcManager:
                 except Exception: pass
                 self.vtuber = None
             raise RuntimeError("VTuber server boot timeout or failed to detect ready URL")
-        url = self._replace_host(ready_url, public_host or PUBLIC_VTUBER_HOST)
+        #url = self._replace_host(ready_url, public_host or PUBLIC_VTUBER_HOST)
+        host = (public_host or PUBLIC_VTUBER_HOST or "").strip() #host = public_host or PUBLIC_VTUBER_HOST
+        host = re.sub(r"^https?://", "", host).rstrip("/")
+        url  = f"https://{host}/"
         with self.lock: proc.url = url
         return url
 
