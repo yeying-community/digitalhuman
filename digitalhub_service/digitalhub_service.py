@@ -29,6 +29,7 @@ class BootResponse(BaseModel):
     data: Dict[str, Any]
 
 class LLMStartRequest(BaseModel):
+    room_id: str
     session_id: str
     round_index: int
     port: int = 8011
@@ -140,6 +141,7 @@ class ProcManager:
     def start_llm(self, req: LLMStartRequest) -> Dict[str, Any]:
         env = os.environ.copy()
         env.update({
+            "ROOM_ID": req.room_id,
             "SESSION_ID": req.session_id,
             "ROUND_INDEX": str(req.round_index),
             "MINIO_ENDPOINT": req.minio_endpoint,
