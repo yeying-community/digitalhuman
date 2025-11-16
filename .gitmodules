@@ -1,0 +1,3 @@
+[submodule "3rdparty/Open-LLM-VTuber"]
+	path = 3rdparty/Open-LLM-VTuber
+	url = git@github.com:yeying-community/Open-LLM-VTuber.git
