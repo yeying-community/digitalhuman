@@ -9,6 +9,8 @@
 !/digitalhuman_round_server/**
 !/digitalhub_service/
 !/digitalhub_service/**
+!/gateway/
+!/gateway/**
 # 4) 在放行目录内需要屏蔽的文件（按你的实际路径）
 /digitalhuman_round_server/app/dh_gateway_old.py
 

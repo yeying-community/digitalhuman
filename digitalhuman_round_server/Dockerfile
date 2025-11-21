@@ -1,10 +1,12 @@
-FROM python:3.8-slim
+FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV PIP_INDEX_URL=${PIP_INDEX_URL}
 
-COPY requirements*.txt /tmp/ 2>/dev/null || true
+COPY requirements.txt /tmp/requirements.txt
 RUN python -m pip install -U pip && \
-    if [ -f /tmp/requirements.txt ]; then pip install --no-cache-dir -r /tmp/requirements.txt; fi
+    pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY . /app/
 

@@ -1,35 +1,50 @@
 version: "3.9"
 services:
-  orchestrator:
+  digitalhub:
     build: { context: ./digitalhub_service, dockerfile: Dockerfile }
     container_name: digitalhub
+    restart: unless-stopped
     env_file: [.env]
-    ports: ["9009:9009"]      # 对外
-    depends_on: [llm, vtuber]
+    environment:
+      VTUBER_CONF_TEMPLATE: /app/conf-base.yaml
+    ports: ["9009:9009"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./conf.prod.yaml:/app/conf-base.yaml:ro
+    depends_on: [gateway]
     healthcheck:
-      test: ["CMD-SHELL","curl -fsS http://127.0.0.1:9009/api/v1/dh/ping || exit 1"]
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request;urllib.request.urlopen('http://127.0.0.1:9009/api/v1/dh/ping')\" || exit 1"]
       interval: 10s
-      timeout: 3s
-      retries: 10
+      timeout: 5s
+      retries: 5
       start_period: 10s
     networks: [dhnet]
 
-  llm:
-    build: { context: ./digitalhuman_round_server, dockerfile: Dockerfile }
-    container_name: round_server
-    expose: ["8011"]          # 仅容器网络内可见
+  gateway:
+    build: ./gateway
+    container_name: dh_vtuber_gateway
+    restart: unless-stopped
     env_file: [.env]
+    ports: ["12393:8080"]
+    healthcheck:
+      test: ["CMD", "/bin/sh", "-c", "wget -qO- http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     networks: [dhnet]
 
-  vtuber:
-    # 注意：上游仓库到服务器时会被运维拉到 ./3rdparty/Open-LLM-VTuber
-    build:
-      context: ./3rdparty/Open-LLM-VTuber
-      dockerfile: Dockerfile   # 如上游用小写 dockerfile，请改成 dockerfile
-    container_name: open_llm_vtuber
-    ports: ["12393:12393"]     # 对外
-    volumes:
-      - ./conf.prod.yaml:/app/conf.yaml
-    networks: [dhnet]
+  vtuber-image:
+    build: { context: ./3rdparty/Open-LLM-VTuber, dockerfile: dockerfile }
+    image: dh-vtuber:latest
+    profiles: ["images"]
 
-networks: { dhnet: {} }
+  llm-image:
+    build: { context: ./digitalhuman_round_server, dockerfile: Dockerfile }
+    image: dh-llm-round:latest
+    profiles: ["images"]
+
+networks:
+  dhnet:
+    external: true
+    name: dhnet
